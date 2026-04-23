@@ -1,0 +1,23 @@
+# Build outputs
+bin/
+obj/
+/packages/
+
+# IDE/editor
+.idea/
+.vs/
+.vscode/
+riderModule.iml
+*_i.c
+*_p.c
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# ReSharper
+/_ReSharper.Caches/
+
+# OS
+.DS_Store
+Thumbs.db

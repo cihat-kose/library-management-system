@@ -9,6 +9,7 @@ namespace LibraryManagementSystem.Loans;
 public class Loan
 {
     private static int _idCounter = 1;
+    private readonly TimeProvider _timeProvider;
 
     public string LoanId { get; }
 
@@ -22,8 +23,9 @@ public class Loan
 
     public DateTime? ReturnedDate { get; private set; }
 
-    public Loan(MediaItem media, User user, DateTime loanDate)
+    public Loan(MediaItem media, User user, DateTime loanDate, TimeProvider? timeProvider = null)
     {
+        _timeProvider = timeProvider ?? TimeProvider.System;
         LoanId = $"L{_idCounter:D3}";
         _idCounter++;
 
@@ -40,6 +42,6 @@ public class Loan
 
     public bool IsOverdue()
     {
-        return ReturnedDate is null && DateTime.Today > ExpectedReturnDate.Date;
+        return ReturnedDate is null && _timeProvider.GetLocalNow().Date > ExpectedReturnDate.Date;
     }
 }

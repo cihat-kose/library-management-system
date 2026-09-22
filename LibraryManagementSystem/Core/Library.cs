@@ -9,6 +9,13 @@ namespace LibraryManagementSystem.Core;
 /// </summary>
 public class Library
 {
+    private readonly TimeProvider _timeProvider;
+
+    public Library(TimeProvider? timeProvider = null)
+    {
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
     private readonly List<Media> _mediaRegistry = new();
     private readonly List<User> _userRegistry = new();
     private readonly List<Loan> _loanHistory = new();
@@ -77,7 +84,7 @@ public class Library
         media.MarkAsLoaned();
         user.BorrowedItems.Add(media);
 
-        var loan = new Loan(media, user, DateTime.Today);
+        var loan = new Loan(media, user, _timeProvider.GetLocalNow().Date, _timeProvider);
         _loanHistory.Add(loan);
 
         Console.WriteLine($"LOG: Borrow | User={user.UserId} | Media={media.MediaId} | Date={loan.LoanDate:yyyy-MM-dd}");
@@ -98,13 +105,15 @@ public class Library
         if (!user.BorrowedItems.Contains(media))
             throw new InvalidOperationException("This media item is not loaned by the specified user.");
 
+        var activeLoan = _loanHistory.LastOrDefault(l => l.Media == media && l.User == user && l.ReturnedDate is null)
+            ?? throw new InvalidOperationException("No active loan record exists for this media item and user.");
+        var returnedDate = _timeProvider.GetLocalNow().Date;
+
         media.MarkAsAvailable();
         user.BorrowedItems.Remove(media);
+        activeLoan.MarkReturned(returnedDate);
 
-        var activeLoan = _loanHistory.LastOrDefault(l => l.Media == media && l.User == user && l.ReturnedDate is null);
-        activeLoan?.MarkReturned(DateTime.Today);
-
-        Console.WriteLine($"LOG: Return | User={user.UserId} | Media={media.MediaId} | Date={DateTime.Today:yyyy-MM-dd}");
+        Console.WriteLine($"LOG: Return | User={user.UserId} | Media={media.MediaId} | Date={returnedDate:yyyy-MM-dd}");
         Console.WriteLine($"Success: '{media.Title}' returned by {user.Name}.");
     }
 
@@ -149,7 +158,7 @@ public class Library
                 continue;
             }
 
-            var daysLeft = (activeLoan.ExpectedReturnDate.Date - DateTime.Today).Days;
+            var daysLeft = (activeLoan.ExpectedReturnDate.Date - _timeProvider.GetLocalNow().Date).Days;
             Console.WriteLine($"[{media.MediaId}] '{media.Title}' | Due: {activeLoan.ExpectedReturnDate:yyyy-MM-dd} | Days left: {daysLeft}");
         }
     }
@@ -189,7 +198,7 @@ public class Library
         Console.WriteLine("=== Overdue Loans ===");
         foreach (var loan in overdue)
         {
-            var daysOverdue = (DateTime.Today - loan.ExpectedReturnDate.Date).Days;
+            var daysOverdue = (_timeProvider.GetLocalNow().Date - loan.ExpectedReturnDate.Date).Days;
             Console.WriteLine($"[{loan.LoanId}] {loan.User.UserId} -> {loan.Media.MediaId} | Due: {loan.ExpectedReturnDate:yyyy-MM-dd} | Overdue: {daysOverdue} days");
         }
     }

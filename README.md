@@ -31,12 +31,39 @@ A console-based library management system built with C#, featuring media catalog
 - **Encapsulation:** Entities enforce internal validation and state transitions.
 - **Single Responsibility:** Domain entities and orchestration logic are separated by purpose.
 
-## How to Run
+## Quick start
+
+Install the **.NET 8 SDK** (includes the .NET 8 runtime). A newer SDK can also
+build this `net8.0` solution, but the .NET 8 runtime must be available to run it.
+Open a terminal in the downloaded repository root, beside
+`library-management-system.sln`, then run:
+
 ```bash
 dotnet restore
 dotnet build
+dotnet test
 dotnet run --project LibraryManagementSystem
 ```
+
+The first restore needs internet access to NuGet for the test packages.
+No database, Docker, or external account is required. This is an educational
+portfolio project; all data is in memory and resets when the application exits.
+
+Each launch creates these demo users (IDs are entered directly; there is no login):
+
+| ID | Name | Type | Email |
+| --- | --- | --- | --- |
+| `U001` | Admin | Employee | admin@library.com |
+| `U002` | Demo Member | Member | member@example.com |
+
+Try this menu sequence; press Enter after each value:
+
+1. Enter `1` to list the four demo media items, including `M001` (the book *1984*).
+2. Enter `2`, then user ID `U002`, then media ID `M001` to borrow it.
+3. Enter `4`, then `U002` to see the loan and its due date (14 days after borrowing).
+4. Enter `3`, then `U002`, then `M001` to return it.
+5. Enter `7` to see the history marked `RETURNED`; enter `1` to see the book available again.
+6. Enter `0` to exit.
 
 ## Project Structure
 ```text
